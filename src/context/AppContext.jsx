@@ -6,6 +6,7 @@ const AppContext = createContext(null);
 const SAVED_JOBS_KEY = "jobmatch.savedJobs";
 const LEGACY_SAVED_JOBS_KEY = "jobmatch.savedJobIds"; // pre-status format, migrated on load
 const COMMENTS_KEY = "jobmatch.companyComments";
+const AUTH_USER_KEY = "jobmatch.authUser";
 
 export const APPLICATION_STATUSES = ["not_applied", "applied", "rejected"];
 
@@ -55,9 +56,34 @@ function loadComments() {
   }
 }
 
+function loadAuthUser() {
+  try {
+    const raw = window.localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getInitials(nameOrEmail) {
+  const value = (nameOrEmail || "").trim();
+  if (!value) return "JM";
+  const nameParts = value
+    .replace(/@.*/, "")
+    .split(/\s+/)
+    .filter(Boolean);
+  return nameParts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "JM";
+}
+
 export function AppProvider({ children }) {
   const [savedJobs, setSavedJobs] = useState(() => loadSavedJobs());
   const [comments, setComments] = useState(() => loadComments());
+  const [authUser, setAuthUser] = useState(() => loadAuthUser());
 
   useEffect(() => {
     try {
@@ -74,6 +100,18 @@ export function AppProvider({ children }) {
       // ignore storage errors
     }
   }, [comments]);
+
+  useEffect(() => {
+    try {
+      if (authUser) {
+        window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authUser));
+      } else {
+        window.localStorage.removeItem(AUTH_USER_KEY);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [authUser]);
 
   const savedIds = useMemo(() => Object.keys(savedJobs), [savedJobs]);
 
@@ -130,8 +168,44 @@ export function AppProvider({ children }) {
     return entry;
   }, []);
 
+  const login = useCallback(({ email }) => {
+    const normalizedEmail = email.trim();
+    const mockUser = {
+      id: `mock-${normalizedEmail.toLowerCase()}`,
+      name: normalizedEmail.split("@")[0] || "JobMatch User",
+      email: normalizedEmail,
+      initials: getInitials(normalizedEmail),
+      createdAt: nowIso(),
+    };
+    setAuthUser(mockUser);
+    return mockUser;
+  }, []);
+
+  const register = useCallback(({ fullName, email }) => {
+    const name = fullName.trim();
+    const normalizedEmail = email.trim();
+    const mockUser = {
+      id: `mock-${Date.now()}`,
+      name,
+      email: normalizedEmail,
+      initials: getInitials(name),
+      createdAt: nowIso(),
+    };
+    setAuthUser(mockUser);
+    return mockUser;
+  }, []);
+
+  const logout = useCallback(() => {
+    setAuthUser(null);
+  }, []);
+
   const value = useMemo(
     () => ({
+      authUser,
+      isAuthenticated: Boolean(authUser),
+      login,
+      register,
+      logout,
       savedIds,
       isSaved,
       toggleSaved,
@@ -141,7 +215,20 @@ export function AppProvider({ children }) {
       getComments,
       addComment,
     }),
-    [savedIds, isSaved, toggleSaved, getApplicationStatus, setApplicationStatus, getSavedAt, getComments, addComment]
+    [
+      authUser,
+      login,
+      register,
+      logout,
+      savedIds,
+      isSaved,
+      toggleSaved,
+      getApplicationStatus,
+      setApplicationStatus,
+      getSavedAt,
+      getComments,
+      addComment,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
