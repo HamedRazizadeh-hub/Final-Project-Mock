@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { seedCommentsForCompany } from "../data/comments";
+import { PROFILE } from "../data/profile";
 
 const AppContext = createContext(null);
 
 const SAVED_JOBS_KEY = "jobmatch.savedJobs";
-const LEGACY_SAVED_JOBS_KEY = "jobmatch.savedJobIds"; // pre-status format, migrated on load
+const LEGACY_SAVED_JOBS_KEY = "jobmatch.savedJobIds";
 const COMMENTS_KEY = "jobmatch.companyComments";
 const AUTH_USER_KEY = "jobmatch.authUser";
+const PROFILE_KEY = "jobmatch.profile";
 
 export const APPLICATION_STATUSES = ["not_applied", "applied", "rejected"];
 
@@ -27,7 +29,6 @@ function loadSavedJobs() {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
     }
-    // Migrate from the older array-of-ids format, if present.
     const legacyRaw = window.localStorage.getItem(LEGACY_SAVED_JOBS_KEY);
     if (legacyRaw) {
       const legacyIds = JSON.parse(legacyRaw);
@@ -67,54 +68,50 @@ function loadAuthUser() {
   }
 }
 
+function loadProfile() {
+  try {
+    const raw = window.localStorage.getItem(PROFILE_KEY);
+    if (!raw) return PROFILE;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? { ...PROFILE, ...parsed } : PROFILE;
+  } catch {
+    return PROFILE;
+  }
+}
+
 function getInitials(nameOrEmail) {
   const value = (nameOrEmail || "").trim();
   if (!value) return "JM";
-  const nameParts = value
-    .replace(/@.*/, "")
-    .split(/\s+/)
-    .filter(Boolean);
-  return nameParts
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "JM";
+  const nameParts = value.replace(/@.*/, "").split(/\s+/).filter(Boolean);
+  return nameParts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "JM";
 }
 
 export function AppProvider({ children }) {
   const [savedJobs, setSavedJobs] = useState(() => loadSavedJobs());
   const [comments, setComments] = useState(() => loadComments());
   const [authUser, setAuthUser] = useState(() => loadAuthUser());
+  const [profile, setProfile] = useState(() => loadProfile());
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(savedJobs));
-    } catch {
-      // ignore storage errors (e.g. private browsing)
-    }
+    try { window.localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(savedJobs)); } catch {}
   }, [savedJobs]);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(COMMENTS_KEY, JSON.stringify(comments));
-    } catch {
-      // ignore storage errors
-    }
+    try { window.localStorage.setItem(COMMENTS_KEY, JSON.stringify(comments)); } catch {}
   }, [comments]);
 
   useEffect(() => {
     try {
-      if (authUser) {
-        window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authUser));
-      } else {
-        window.localStorage.removeItem(AUTH_USER_KEY);
-      }
-    } catch {
-      // ignore storage errors
-    }
+      if (authUser) window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authUser));
+      else window.localStorage.removeItem(AUTH_USER_KEY);
+    } catch {}
   }, [authUser]);
 
-  const savedIds = useMemo(() => Object.keys(savedJobs), [savedJobs]);
+  useEffect(() => {
+    try { window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch {}
+  }, [profile]);
 
+  const savedIds = useMemo(() => Object.keys(savedJobs), [savedJobs]);
   const isSaved = useCallback((jobId) => Boolean(savedJobs[jobId]), [savedJobs]);
 
   const toggleSaved = useCallback((jobId) => {
@@ -135,22 +132,19 @@ export function AppProvider({ children }) {
 
   const setApplicationStatus = useCallback((jobId, status) => {
     setSavedJobs((prev) => {
-      if (!prev[jobId]) return prev; // can only track status for saved jobs
+      if (!prev[jobId]) return prev;
       return { ...prev, [jobId]: { ...prev[jobId], status } };
     });
   }, []);
 
   const getSavedAt = useCallback((jobId) => savedJobs[jobId]?.savedAt || null, [savedJobs]);
 
-  const getComments = useCallback(
-    (company) => {
-      const userComments = comments[company] || [];
-      return [...seedCommentsForCompany(company), ...userComments].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-    },
-    [comments]
-  );
+  const getComments = useCallback((company) => {
+    const userComments = comments[company] || [];
+    return [...seedCommentsForCompany(company), ...userComments].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  }, [comments]);
 
   const addComment = useCallback((company, { tenure, quality, salaryOpinion, comment }) => {
     const entry = {
@@ -192,44 +186,48 @@ export function AppProvider({ children }) {
       createdAt: nowIso(),
     };
     setAuthUser(mockUser);
+    setProfile((prev) => ({ ...prev, name, email: normalizedEmail, initials: getInitials(name) }));
     return mockUser;
   }, []);
 
-  const logout = useCallback(() => {
-    setAuthUser(null);
+  const logout = useCallback(() => setAuthUser(null), []);
+
+  const updateProfile = useCallback((updates) => {
+    setProfile((prev) => {
+      const next = { ...prev, ...updates };
+      next.initials = getInitials(next.name || next.email);
+      return next;
+    });
+
+    setAuthUser((prev) => {
+      if (!prev) return prev;
+      const nextName = updates.name ?? prev.name;
+      const nextEmail = updates.email ?? prev.email;
+      return { ...prev, name: nextName, email: nextEmail, initials: getInitials(nextName || nextEmail) };
+    });
   }, []);
 
-  const value = useMemo(
-    () => ({
-      authUser,
-      isAuthenticated: Boolean(authUser),
-      login,
-      register,
-      logout,
-      savedIds,
-      isSaved,
-      toggleSaved,
-      getApplicationStatus,
-      setApplicationStatus,
-      getSavedAt,
-      getComments,
-      addComment,
-    }),
-    [
-      authUser,
-      login,
-      register,
-      logout,
-      savedIds,
-      isSaved,
-      toggleSaved,
-      getApplicationStatus,
-      setApplicationStatus,
-      getSavedAt,
-      getComments,
-      addComment,
-    ]
-  );
+  const value = useMemo(() => ({
+    authUser,
+    isAuthenticated: Boolean(authUser),
+    login,
+    register,
+    logout,
+    profile,
+    updateProfile,
+    savedIds,
+    isSaved,
+    toggleSaved,
+    getApplicationStatus,
+    setApplicationStatus,
+    getSavedAt,
+    getComments,
+    addComment,
+  }), [
+    authUser, login, register, logout, profile, updateProfile,
+    savedIds, isSaved, toggleSaved, getApplicationStatus,
+    setApplicationStatus, getSavedAt, getComments, addComment,
+  ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
