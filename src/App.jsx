@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import FindJobs from "./pages/FindJobs";
 import JobDetails from "./pages/JobDetails";
@@ -13,9 +14,11 @@ import { useApp } from "./context/AppContext";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
   return null;
 }
 
@@ -35,10 +38,11 @@ export default function App() {
   const isExternal = pathname.startsWith("/external");
 
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-surface-muted flex flex-col">
       <ScrollToTop />
       {!isExternal && <Navbar />}
-      <main>
+
+      <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/jobs" element={<FindJobs />} />
@@ -46,6 +50,7 @@ export default function App() {
           <Route path="/external/:jobId" element={<ExternalCompany />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
           <Route
             path="/saved"
             element={
@@ -54,6 +59,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/profile"
             element={
@@ -62,9 +68,12 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
+
+      {!isExternal && <Footer />}
     </div>
   );
 }
