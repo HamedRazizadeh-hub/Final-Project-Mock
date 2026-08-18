@@ -13,7 +13,7 @@ export default function Navbar() {
   const { authUser, isAuthenticated, logout } = useApp();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border-subtle bg-white/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-b border-accent-100 bg-white/90 backdrop-blur-md">
       <div className="container-app flex h-16 items-center justify-between gap-4">
         <NavLink
           to="/"
@@ -50,7 +50,7 @@ export default function Navbar() {
             <>
               <NavLink
                 to="/profile"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-100 text-sm font-semibold text-accent-700"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-100 text-sm font-semibold text-accent-700 ring-2 ring-white"
                 aria-label="Your profile"
                 title={authUser?.name || "Your profile"}
               >
@@ -76,7 +76,7 @@ export default function Navbar() {
 
               <NavLink
                 to="/register"
-                className="rounded-lg bg-accent-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-700"
+                className="rounded-lg bg-accent-600 px-3.5 py-2 text-sm font-semibold text-white shadow-card transition-colors hover:bg-accent-700"
               >
                 Create account
               </NavLink>

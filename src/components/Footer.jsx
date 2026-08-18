@@ -14,7 +14,7 @@ const ACCOUNT_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border-subtle bg-white">
+    <footer className="border-t border-navy-800 bg-navy-950 text-white">
       <div className="container-app py-10">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
@@ -24,17 +24,16 @@ export default function Footer() {
               aria-label="JobMatch home"
             >
               <Logo size={30} />
-              <span className="text-lg font-semibold tracking-tight text-navy-900">
+              <span className="text-lg font-semibold tracking-tight text-white">
                 JobMatch
               </span>
             </Link>
 
-            <p className="mt-4 text-sm leading-6 text-navy-600">
-              Find relevant jobs across the Netherlands, understand why they
-              match your profile, and make better application decisions.
+            <p className="mt-4 text-sm leading-6 text-navy-200">
+              Find relevant jobs, understand why they match your profile, and make better application decisions.
             </p>
 
-            <p className="mt-4 text-xs leading-5 text-navy-500">
+            <p className="mt-4 text-xs leading-5 text-navy-300">
               Current product mock for the HackYourFuture final project.
             </p>
           </div>
@@ -48,9 +47,9 @@ export default function Footer() {
           </FooterGroup>
 
           <FooterGroup title="Why JobMatch">
-            <span className="text-sm text-navy-600">Explainable matching</span>
-            <span className="text-sm text-navy-600">Fresh job listings</span>
-            <span className="text-sm text-navy-600">Reliable job discovery</span>
+            <span className="text-sm text-navy-200">Explainable matching</span>
+            <span className="text-sm text-navy-200">Fresh job listings</span>
+            <span className="text-sm text-navy-200">Reliable job discovery</span>
           </FooterGroup>
 
           <FooterGroup title="Account">
@@ -62,8 +61,8 @@ export default function Footer() {
           </FooterGroup>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-border-subtle pt-5 text-xs text-navy-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 JobMatch. All rights reserved.</p>
+        <div className="mt-10 flex flex-col gap-2 border-t border-navy-800 pt-5 text-xs text-navy-300 sm:flex-row sm:items-center sm:justify-between">
+          <p>&copy; 2026 JobMatch. All rights reserved.</p>
           <p>Built as a HackYourFuture final project mock.</p>
         </div>
       </div>
@@ -74,7 +73,7 @@ export default function Footer() {
 function FooterGroup({ title, children }) {
   return (
     <div>
-      <h2 className="text-sm font-semibold text-navy-900">{title}</h2>
+      <h2 className="text-sm font-semibold text-white">{title}</h2>
       <div className="mt-4 flex flex-col items-start gap-3">{children}</div>
     </div>
   );
@@ -84,7 +83,7 @@ function FooterLink({ to, children }) {
   return (
     <Link
       to={to}
-      className="text-sm text-navy-600 transition-colors hover:text-navy-900"
+      className="text-sm text-navy-200 transition-colors hover:text-white"
     >
       {children}
     </Link>

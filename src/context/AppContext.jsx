@@ -81,9 +81,11 @@ function loadProfile() {
     }
 
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object"
-      ? { ...PROFILE, cv: null, ...parsed }
-      : { ...PROFILE, cv: null };
+    if (parsed && typeof parsed === "object") {
+      return { ...PROFILE, cv: null, ...parsed };
+    }
+
+    return { ...PROFILE, cv: null };
   } catch {
     return { ...PROFILE, cv: null };
   }

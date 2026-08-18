@@ -25,10 +25,10 @@ export default function MatchScore({ score, size = "md", showLabel = true }) {
     low: "bg-navy-400",
   };
 
-  const sizeClasses = size === "lg" ? "text-2xl" : size === "sm" ? "text-sm" : "text-base";
+  const sizeClasses = size === "lg" ? "text-2xl px-3 py-2" : size === "sm" ? "text-sm px-2.5 py-1" : "text-base px-3 py-1.5";
 
   return (
-    <span className={`inline-flex items-baseline gap-1.5 font-semibold ${toneClasses[tone]} ${sizeClasses}`}>
+    <span className={`inline-flex items-baseline gap-1.5 rounded-full bg-white shadow-card ring-1 ring-border-subtle font-semibold ${toneClasses[tone]} ${sizeClasses}`}>
       <span className={`inline-block h-2 w-2 rounded-full ${dotClasses[tone]}`} aria-hidden="true" />
       {score}%{showLabel && <span className="font-medium text-navy-500 text-[0.7em]">Match</span>}
     </span>

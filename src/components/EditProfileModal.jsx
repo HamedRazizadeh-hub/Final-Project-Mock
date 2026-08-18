@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { FileText, Upload, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 const WORK_MODES = ["On-site", "Hybrid", "Remote"];
 const EXPERIENCE_LEVELS = ["Entry-level", "Mid-level", "Senior"];
-const ACCEPTED_CV_TYPES = ".pdf,.doc,.docx";
 
 function toCommaSeparated(items) {
   return Array.isArray(items) ? items.join(", ") : "";
@@ -16,24 +15,13 @@ function fromCommaSeparated(value) {
     .filter(Boolean);
 }
 
-function formatFileSize(size) {
-  if (!size) return "";
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export default function EditProfileModal({
   open,
   profile,
   onClose,
   onSave,
-  onSaveCv,
-  onRemoveCv,
 }) {
-  const fileInputRef = useRef(null);
   const [form, setForm] = useState(null);
-  const [cvError, setCvError] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -45,11 +33,9 @@ export default function EditProfileModal({
       skills: toCommaSeparated(profile.skills),
       experienceLevel: profile.experienceLevel || "Mid-level",
       preferredWorkMode: profile.preferredWorkMode || [],
-      preferredProvinces: toCommaSeparated(profile.preferredProvinces),
+      preferredLocations: toCommaSeparated(profile.preferredLocations),
       languages: profile.languages || [],
     });
-
-    setCvError("");
   }, [open, profile]);
 
   if (!open || !form) return null;
@@ -99,31 +85,6 @@ export default function EditProfileModal({
     }));
   }
 
-  function handleCvChange(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setCvError("");
-
-    const extension = file.name.split(".").pop()?.toLowerCase();
-    const allowedExtensions = ["pdf", "doc", "docx"];
-
-    if (!extension || !allowedExtensions.includes(extension)) {
-      setCvError("Please choose a PDF, DOC, or DOCX file.");
-      event.target.value = "";
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setCvError("Please choose a CV smaller than 5 MB.");
-      event.target.value = "";
-      return;
-    }
-
-    onSaveCv(file);
-    event.target.value = "";
-  }
-
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -134,7 +95,7 @@ export default function EditProfileModal({
       skills: fromCommaSeparated(form.skills),
       experienceLevel: form.experienceLevel,
       preferredWorkMode: form.preferredWorkMode,
-      preferredProvinces: fromCommaSeparated(form.preferredProvinces),
+      preferredLocations: fromCommaSeparated(form.preferredLocations),
       languages: form.languages
         .map((language) => ({
           language: language.language.trim(),
@@ -160,7 +121,7 @@ export default function EditProfileModal({
               Edit profile
             </h2>
             <p className="mt-1 text-sm text-navy-500">
-              Keep your profile accurate so JobMatch can explain your job match.
+              V1 profile setup is manual. CV upload and AI parsing are coming later.
             </p>
           </div>
 
@@ -191,75 +152,6 @@ export default function EditProfileModal({
               required
             />
           </div>
-
-          <section className="rounded-2xl border border-border-subtle bg-surface-muted p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <FileText size={17} className="text-accent-700" />
-                  <h3 className="text-sm font-semibold text-navy-900">
-                    CV / Resume
-                  </h3>
-                </div>
-
-                <p className="mt-1 text-xs leading-5 text-navy-500">
-                  Upload your CV for future profile enrichment and smarter matching.
-                  AI parsing is not active in this mock yet.
-                </p>
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={ACCEPTED_CV_TYPES}
-                onChange={handleCvChange}
-                className="hidden"
-              />
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-border-default bg-white px-3 py-2 text-xs font-medium text-navy-700 hover:bg-surface-alt"
-              >
-                <Upload size={14} />
-                {profile.cv ? "Replace CV" : "Upload CV"}
-              </button>
-            </div>
-
-            {profile.cv ? (
-              <div className="mt-4 flex flex-col gap-3 rounded-xl border border-border-subtle bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-navy-800">
-                    {profile.cv.name}
-                  </p>
-                  <p className="mt-1 text-xs text-navy-500">
-                    {formatFileSize(profile.cv.size)}
-                    {profile.cv.uploadedAt
-                      ? ` · Added ${new Date(profile.cv.uploadedAt).toLocaleDateString()}`
-                      : ""}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onRemoveCv}
-                  className="self-start rounded-lg px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 sm:self-auto"
-                >
-                  Remove
-                </button>
-              </div>
-            ) : (
-              <p className="mt-3 text-xs text-navy-500">
-                Accepted formats: PDF, DOC, DOCX · Maximum 5 MB
-              </p>
-            )}
-
-            {cvError && (
-              <p className="mt-3 text-xs font-medium text-red-600" role="alert">
-                {cvError}
-              </p>
-            )}
-          </section>
 
           <TextField
             label="Preferred roles"
@@ -323,18 +215,18 @@ export default function EditProfileModal({
           </div>
 
           <TextField
-            label="Preferred provinces"
-            helperText="Separate provinces with commas."
-            value={form.preferredProvinces}
-            onChange={(value) => setField("preferredProvinces", value)}
-            placeholder="Utrecht, Noord-Holland"
+            label="Preferred locations"
+            helperText="Separate cities, locations, or Remote with commas."
+            value={form.preferredLocations}
+            onChange={(value) => setField("preferredLocations", value)}
+            placeholder="Utrecht, Amsterdam, Remote"
           />
 
           <div>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-navy-800">
-                  Language skills
+                  Languages
                 </p>
                 <p className="mt-1 text-xs text-navy-500">
                   Add languages that may be relevant to matching.

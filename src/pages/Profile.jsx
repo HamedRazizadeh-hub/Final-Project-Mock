@@ -1,23 +1,11 @@
 import { useState } from "react";
-import { CheckCircle2, FileText, Lock, Pencil } from "lucide-react";
+import { CheckCircle2, Lock, Pencil } from "lucide-react";
 import { COMING_LATER } from "../data/profile";
 import EditProfileModal from "../components/EditProfileModal";
 import { useApp } from "../context/AppContext";
 
-function formatFileSize(size) {
-  if (!size) return "";
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export default function Profile() {
-  const {
-    profile,
-    updateProfile,
-    saveCvMetadata,
-    removeCv,
-  } = useApp();
+  const { profile, updateProfile } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
   const [showSavedMessage, setShowSavedMessage] = useState(false);
@@ -37,7 +25,7 @@ export default function Profile() {
         <div>
           <h1 className="text-xl font-semibold text-navy-900">Profile</h1>
           <p className="mt-1 max-w-2xl text-sm text-navy-600">
-            This information helps JobMatch calculate a transparent match % for every job.
+            Complete your V1 profile manually so JobMatch can display transparent match information.
           </p>
         </div>
 
@@ -53,7 +41,7 @@ export default function Profile() {
 
       {showSavedMessage && (
         <div
-          className="mt-5 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800"
+          className="mt-5 flex items-center gap-2 rounded-xl border border-success-600/15 bg-success-50 px-4 py-3 text-sm font-medium text-success-600"
           role="status"
         >
           <CheckCircle2 size={16} />
@@ -62,107 +50,65 @@ export default function Profile() {
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-border-subtle bg-white p-7">
-            <div className="flex items-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-100 text-lg font-semibold text-accent-700">
-                {profile.initials}
-              </span>
+        <div className="rounded-2xl border border-border-subtle bg-white p-7">
+          <div className="flex items-center gap-4">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-100 text-lg font-semibold text-accent-700">
+              {profile.initials}
+            </span>
 
-              <div>
-                <p className="text-base font-semibold text-navy-900">
-                  {profile.name}
-                </p>
-                <p className="text-sm text-navy-500">{profile.email}</p>
-              </div>
-            </div>
-
-            <div className="mt-7 grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <ProfileField
-                label="Preferred roles"
-                items={profile.preferredRoles}
-              />
-              <ProfileField
-                label="Experience level"
-                items={[profile.experienceLevel]}
-              />
-              <ProfileField label="Skills" items={profile.skills} />
-              <ProfileField
-                label="Preferred work mode"
-                items={profile.preferredWorkMode}
-              />
-              <ProfileField
-                label="Preferred provinces"
-                items={profile.preferredProvinces}
-              />
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">
-                  Language skills
-                </p>
-
-                {profile.languages.length > 0 ? (
-                  <ul className="mt-2 space-y-1.5">
-                    {profile.languages.map((language) => (
-                      <li
-                        key={`${language.language}-${language.level}`}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <span className="text-navy-800">
-                          {language.language}
-                        </span>
-                        <span className="rounded-full bg-surface-alt px-2 py-0.5 text-xs font-medium text-navy-600">
-                          {language.level}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-2 text-sm text-navy-400">
-                    No languages added yet.
-                  </p>
-                )}
-              </div>
+            <div>
+              <p className="text-base font-semibold text-navy-900">
+                {profile.name}
+              </p>
+              <p className="text-sm text-navy-500">{profile.email}</p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border-subtle bg-white p-6">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-lg bg-accent-50 text-accent-700">
-                <FileText size={18} />
-              </span>
+          <div className="mt-7 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <ProfileField
+              label="Preferred roles"
+              items={profile.preferredRoles}
+            />
+            <ProfileField
+              label="Experience level"
+              items={[profile.experienceLevel]}
+            />
+            <ProfileField label="Skills" items={profile.skills} />
+            <ProfileField
+              label="Preferred work mode"
+              items={profile.preferredWorkMode}
+            />
+            <ProfileField
+              label="Preferred locations"
+              items={profile.preferredLocations}
+            />
 
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold text-navy-900">
-                  CV / Resume
-                </h2>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+                Languages
+              </p>
 
-                {profile.cv ? (
-                  <>
-                    <p className="mt-2 truncate text-sm font-medium text-navy-800">
-                      {profile.cv.name}
-                    </p>
-                    <p className="mt-1 text-xs text-navy-500">
-                      {formatFileSize(profile.cv.size)}
-                      {profile.cv.uploadedAt
-                        ? ` · Added ${new Date(profile.cv.uploadedAt).toLocaleDateString()}`
-                        : ""}
-                    </p>
-                    <p className="mt-3 text-xs leading-5 text-navy-500">
-                      The mock currently stores CV metadata only. Later, the backend can store the file and AI can extract profile information and skills from it.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-1 text-sm text-navy-600">
-                      No CV uploaded yet.
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-navy-500">
-                      Add a CV from Edit profile. In a later version it can help enrich your profile and improve matching.
-                    </p>
-                  </>
-                )}
-              </div>
+              {profile.languages.length > 0 ? (
+                <ul className="mt-2 space-y-1.5">
+                  {profile.languages.map((language) => (
+                    <li
+                      key={`${language.language}-${language.level}`}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="text-navy-800">
+                        {language.language}
+                      </span>
+                      <span className="rounded-full bg-surface-alt px-2 py-0.5 text-xs font-medium text-navy-600">
+                        {language.level}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-sm text-navy-400">
+                  No languages added yet.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -174,7 +120,7 @@ export default function Profile() {
             </h2>
 
             <p className="mt-1 text-xs text-navy-500">
-              A preview of what's planned beyond the MVP.
+              Beyond V1. Not active in the current mock flow.
             </p>
 
             <div className="mt-4 space-y-3">
@@ -209,8 +155,6 @@ export default function Profile() {
         profile={profile}
         onClose={() => setIsEditing(false)}
         onSave={handleSave}
-        onSaveCv={saveCvMetadata}
-        onRemoveCv={removeCv}
       />
     </div>
   );

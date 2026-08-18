@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { MessageSquarePlus, User } from "lucide-react";
 import StarRating from "./StarRating";
+import LockedFeature from "./LockedFeature";
 import { useApp } from "../context/AppContext";
 import { SALARY_OPINIONS } from "../data/comments";
 import { timeAgo } from "./SourceFreshness";
@@ -21,7 +22,7 @@ const SALARY_BADGE_CLASSES = {
  * user adds is kept in localStorage (see AppContext), not sent anywhere.
  */
 export default function CompanyReviews({ company }) {
-  const { getComments, addComment } = useApp();
+  const { isAuthenticated, getComments, addComment } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [tenure, setTenure] = useState("");
   const [quality, setQuality] = useState(0);
@@ -35,6 +36,51 @@ export default function CompanyReviews({ company }) {
     if (!reviews.length) return null;
     return reviews.reduce((sum, r) => sum + r.quality, 0) / reviews.length;
   }, [reviews]);
+
+  const previewReviews = reviews.slice(0, 2);
+
+  if (!isAuthenticated) {
+    return (
+      <div id="reviews">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-navy-900">Company reviews</h2>
+            <p className="mt-1.5 text-xs text-navy-500">
+              Reviews are available to registered JobMatch users.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <LockedFeature
+            title="Create an account to read company reviews"
+            message={`See what candidates and employees have shared about ${company}.`}
+            cta="Log in to read reviews"
+          >
+            <ul className="space-y-4 p-4">
+              {(previewReviews.length ? previewReviews : [{ id: "locked-preview", authorLabel: "JobMatch member", tenure: "Candidate", quality: 4, comment: "Helpful notes about the interview process and team culture.", salaryOpinion: "At market", createdAt: new Date().toISOString() }]).map((review) => (
+                <li key={review.id} className="rounded-xl border border-border-subtle bg-white p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-alt text-navy-500">
+                        <User size={15} />
+                      </span>
+                      <div>
+                        <p className="text-sm font-medium text-navy-900">{review.authorLabel}</p>
+                        <p className="text-xs text-navy-500">{review.tenure}</p>
+                      </div>
+                    </div>
+                    <StarRating value={review.quality} />
+                  </div>
+                  <p className="mt-2.5 text-sm leading-6 text-navy-700">{review.comment}</p>
+                </li>
+              ))}
+            </ul>
+          </LockedFeature>
+        </div>
+      </div>
+    );
+  }
 
   const resetForm = () => {
     setTenure("");

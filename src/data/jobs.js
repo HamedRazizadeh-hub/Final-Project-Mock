@@ -1,5 +1,3 @@
-import { CITIES_BY_PROVINCE, provinceForCity } from "./locations";
-
 // ---------------------------------------------------------------------------
 // Mock job data.
 //
@@ -11,7 +9,7 @@ import { CITIES_BY_PROVINCE, provinceForCity } from "./locations";
 // Shape:
 // {
 //   id, title, company, description, requirements[], skills[],
-//   city, province, latitude, longitude,
+//   city, latitude, longitude,
 //   employmentType, workMode, experienceLevel,
 //   matchScore, matchBreakdown: { skills, experience, language, location },
 //   matchStrengths[], matchGaps[],
@@ -88,7 +86,6 @@ function nextId() {
 
 function makeJob(overrides) {
   const city = overrides.city;
-  const province = overrides.province || provinceForCity(city) || "Utrecht";
   const [latitude, longitude] = coordsFor(city);
   return {
     id: nextId(),
@@ -105,7 +102,6 @@ function makeJob(overrides) {
     externalUrl: "https://example.com/apply",
     latitude,
     longitude,
-    province,
     ...overrides,
   };
 }
@@ -289,8 +285,7 @@ export const HERO_JOBS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Generated filler jobs — realistic breadth across provinces/cities so
-// filtering (province at search time, city/type/mode as refinement filters)
+// Generated filler jobs with realistic breadth across cities so filtering\r\n// by city/type/mode
 // produces believable, consistent counts everywhere in the app.
 // ---------------------------------------------------------------------------
 

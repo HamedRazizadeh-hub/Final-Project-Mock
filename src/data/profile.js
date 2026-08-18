@@ -1,5 +1,5 @@
 // Mock profile data. In a future version this feeds the match-scoring
-// engine (skills, experience level, languages, location preferences).
+// engine through Backend/Data, not frontend calculation.
 export const PROFILE = {
   name: "Hamed Razizadeh",
   email: "hamed.razizadeh@gmail.com",
@@ -8,7 +8,7 @@ export const PROFILE = {
   skills: ["React", "JavaScript", "TypeScript", "Git", "Figma"],
   experienceLevel: "Mid-level",
   preferredWorkMode: ["Hybrid", "Remote"],
-  preferredProvinces: ["Utrecht", "Noord-Holland"],
+  preferredLocations: ["Utrecht", "Amsterdam", "Remote"],
   languages: [
     { language: "English", level: "Fluent" },
     { language: "Dutch", level: "Basic" },
@@ -17,9 +17,14 @@ export const PROFILE = {
 
 export const COMING_LATER = [
   {
+    title: "CV Upload and AI Parsing",
+    description:
+      "Upload a resume and let AI extract profile details automatically in a later version.",
+  },
+  {
     title: "Full Application Tracker",
     description:
-      "Timeline, notes and reminders per application — beyond the simple status tag on Saved Jobs today.",
+      "Timeline, notes, reminders, and richer application stages beyond the simple V1 status tag.",
   },
   {
     title: "Smart Notifications",

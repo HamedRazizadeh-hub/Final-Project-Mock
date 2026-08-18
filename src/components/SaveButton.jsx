@@ -4,7 +4,15 @@ import { Bookmark } from "lucide-react";
  * Reusable save/bookmark toggle used on job cards, the preview panel and the
  * job details page. Keeps a consistent visual + a11y contract everywhere.
  */
-export default function SaveButton({ saved, onToggle, size = "md", variant = "default", className = "" }) {
+export default function SaveButton({
+  saved,
+  onToggle,
+  size = "md",
+  variant = "default",
+  className = "",
+  disabled = false,
+  label,
+}) {
   const sizes = {
     sm: "text-xs gap-1 px-2.5 py-1.5",
     md: "text-sm gap-1.5 px-3 py-2",
@@ -31,10 +39,11 @@ export default function SaveButton({ saved, onToggle, size = "md", variant = "de
       }}
       aria-pressed={saved}
       aria-label={saved ? "Remove from saved jobs" : "Save job"}
-      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      disabled={disabled}
+      className={`${base} ${sizes[size]} ${variants[variant]} ${disabled ? "opacity-80" : ""} ${className}`}
     >
       <Bookmark size={size === "sm" ? 14 : 16} strokeWidth={2} fill={saved ? "currentColor" : "none"} />
-      {saved ? "Saved" : "Save"}
+      {label || (saved ? "Saved" : "Save")}
     </button>
   );
 }

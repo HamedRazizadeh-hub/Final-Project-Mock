@@ -8,4 +8,4 @@ export const SORT_OPTIONS = [
   { value: "match", label: "Highest match" },
 ];
 
-export const POPULAR_SEARCHES = ["Frontend", "Backend", "Data Science", "UX/UI"];
+export const POPULAR_SEARCHES = ["Frontend Developer", "Backend Developer", "Data Engineer", "UX Designer", "React", "Python"];

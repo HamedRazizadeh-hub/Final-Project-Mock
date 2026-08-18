@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useApp } from "../context/AppContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useApp();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,12 +33,13 @@ export default function Register() {
     }
 
     register({ fullName, email });
-    navigate("/", { replace: true });
+    navigate(location.state?.from?.pathname || "/profile", { replace: true });
   };
 
   return (
     <div className="container-app flex min-h-[calc(100vh-4rem)] items-center justify-center py-10">
-      <section className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-7 shadow-card">
+      <section className="grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border-subtle bg-white shadow-popover md:grid-cols-[1fr_0.9fr]">
+        <div className="p-7">
         <div className="flex items-center gap-2.5">
           <Logo size={32} />
           <span className="text-lg font-semibold tracking-tight text-navy-900">JobMatch</span>
@@ -123,10 +125,23 @@ export default function Register() {
 
         <p className="mt-5 text-center text-sm text-navy-600">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-accent-700 hover:text-accent-600">
+          <Link
+            to="/login"
+            state={{ from: location.state?.from }}
+            className="font-semibold text-accent-700 hover:text-accent-600"
+          >
             Log in
           </Link>
         </p>
+        </div>
+
+        <aside className="hidden bg-[linear-gradient(135deg,#ecfbf3_0%,#eaf4ff_100%)] p-8 md:block">
+          <p className="text-sm font-semibold text-success-600">Start with your profile</p>
+          <h2 className="mt-3 text-2xl font-semibold text-navy-950">Manual profile setup powers transparent matching.</h2>
+          <p className="mt-4 text-sm leading-6 text-navy-600">
+            V1 uses simple profile fields: roles, skills, experience, work mode, locations, and languages.
+          </p>
+        </aside>
       </section>
     </div>
   );
